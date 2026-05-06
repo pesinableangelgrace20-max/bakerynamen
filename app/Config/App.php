@@ -29,7 +29,14 @@ class App extends BaseConfig
      *
      * @var list<string>
      */
-    public array $allowedHostnames = [];
+    // Needed so CI4 can generate correct links when accessed via your LAN IP
+    // (e.g. from a mobile phone).
+    public array $allowedHostnames = [
+        'localhost',
+        '127.0.0.1',
+        '192.168.0.139',
+        '172.18.192.1',
+    ];
 
     /**
      * --------------------------------------------------------------------------

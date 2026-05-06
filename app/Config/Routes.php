@@ -14,28 +14,29 @@ $routes->get('register', 'AuthController::register');
 $routes->post('register/store', 'AuthController::store');
 $routes->get('logout', 'AuthController::logout');
 
-// --- 2. Admin Dashboard & Navigation ---
-$routes->group('admin', function($routes) {
-    
-    // Main Sections
-    $routes->get('/', 'AdminController::index');       
-    $routes->get('stock', 'AdminController::stock');   
-    $routes->get('sales', 'AdminController::sales');   
-    $routes->get('reports', 'AdminController::reports'); 
-    $routes->get('users', 'AdminController::users');   
+// --- 2. Admin ---
+$routes->group('admin', function ($routes) {
+    $routes->get('/', 'DashboardController::index');
+    $routes->get('products', 'ProductController::index');
 
-    // Product CRUD
-    $routes->post('product/store', 'AdminController::storeProduct');
-    $routes->get('product/edit/(:num)', 'AdminController::editProduct/$1');
-    $routes->post('product/update/(:num)', 'AdminController::updateProduct/$1');
-    $routes->get('product/delete/(:num)', 'AdminController::deleteProduct/$1');
+    $routes->get('stock', 'StockController::index');
 
-    // SALES ACTION (This matches your URL /admin/sales/store)
-    $routes->post('sales/store', 'AdminController::storeSale');
+    $routes->get('sales', 'SaleController::index');
+    $routes->post('sales/store', 'SaleController::store');
+    $routes->get('sales/receipt/(:num)', 'SaleController::receipt/$1');
+    $routes->get('sales/delete/(:num)', 'SaleController::delete/$1');
 
-    // User CRUD
-    $routes->post('users/store', 'AdminController::storeUser');
-    $routes->get('users/edit/(:num)', 'AdminController::editUser/$1');
-    $routes->post('users/update/(:num)', 'AdminController::updateUser/$1');
-    $routes->get('users/delete/(:num)', 'AdminController::deleteUser/$1');
+    $routes->get('reports', 'ReportsController::index');
+    $routes->get('reports/export', 'ReportsController::exportCsv');
+
+    $routes->get('users', 'UserController::index');
+    $routes->post('users/store', 'UserController::store');
+    $routes->get('users/edit/(:num)', 'UserController::edit/$1');
+    $routes->post('users/update/(:num)', 'UserController::update/$1');
+    $routes->get('users/delete/(:num)', 'UserController::delete/$1');
+
+    $routes->post('product/store', 'ProductController::store');
+    $routes->get('product/edit/(:num)', 'ProductController::edit/$1');
+    $routes->post('product/update/(:num)', 'ProductController::update/$1');
+    $routes->get('product/delete/(:num)', 'ProductController::delete/$1');
 });

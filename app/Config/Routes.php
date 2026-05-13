@@ -20,11 +20,13 @@ $routes->group('admin', function ($routes) {
     $routes->get('products', 'ProductController::index');
 
     $routes->get('stock', 'StockController::index');
+    $routes->get('stock/clear-expired', 'StockController::clearExpired');
 
     $routes->get('sales', 'SaleController::index');
     $routes->post('sales/store', 'SaleController::store');
     $routes->get('sales/receipt/(:num)', 'SaleController::receipt/$1');
     $routes->get('sales/delete/(:num)', 'SaleController::delete/$1');
+    $routes->get('sales/restore/(:num)', 'SaleController::restore/$1');
 
     $routes->get('reports', 'ReportsController::index');
     $routes->get('reports/export', 'ReportsController::exportCsv');

@@ -1,0 +1,13 @@
+# CodeIgniter 4 .gitignore
+.env
+writable/debugbar/*
+writable/session/*
+writable/logs/*
+writable/cache/*
+!writable/debugbar/.gitkeep
+!writable/session/.gitkeep
+!writable/logs/.gitkeep
+!writable/cache/.gitkeep
+vendor/
+php-cs-fixer.cache
+.phpunit.result.cache

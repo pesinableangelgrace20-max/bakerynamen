@@ -29,8 +29,7 @@ class ProductController extends AdminBaseController
         return view('admin/pages/products', [
             'page'     => 'products',
             'title'    => 'Products',
-            'products' => $pModel->paginate(10),
-            'pager'    => $pModel->pager,
+            'products' => $pModel->orderBy('name', 'ASC')->findAll(),
             'search_q' => $q ?? '',
         ]);
     }
@@ -45,6 +44,7 @@ class ProductController extends AdminBaseController
             'name'  => 'required|min_length[2]|max_length[255]',
             'price' => 'required|numeric|greater_than_equal_to[0]',
             'stock' => 'required|integer|greater_than_equal_to[0]',
+            'expiry_date' => 'permit_empty|valid_date[Y-m-d]',
         ];
 
         if (! $this->validate($rules)) {
@@ -55,6 +55,7 @@ class ProductController extends AdminBaseController
             'name'  => $this->request->getPost('name'),
             'price' => $this->request->getPost('price'),
             'stock' => $this->request->getPost('stock'),
+            'expiry_date' => $this->request->getPost('expiry_date') ?: null,
         ]);
 
         return redirect()->to('/admin/products')->with('success', 'Product added!');
@@ -88,6 +89,7 @@ class ProductController extends AdminBaseController
             'name'  => 'required|min_length[2]|max_length[255]',
             'price' => 'required|numeric|greater_than_equal_to[0]',
             'stock' => 'required|integer|greater_than_equal_to[0]',
+            'expiry_date' => 'permit_empty|valid_date[Y-m-d]',
         ];
 
         if (! $this->validate($rules)) {
@@ -98,6 +100,7 @@ class ProductController extends AdminBaseController
             'name'  => $this->request->getPost('name'),
             'price' => $this->request->getPost('price'),
             'stock' => $this->request->getPost('stock'),
+            'expiry_date' => $this->request->getPost('expiry_date') ?: null,
         ]);
 
         return redirect()->to('/admin/products')->with('success', 'Product updated!');

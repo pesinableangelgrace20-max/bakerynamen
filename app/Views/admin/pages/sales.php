@@ -31,16 +31,24 @@
 </div>
 
 <form method="get" action="<?= base_url('admin/sales') ?>" class="toolbar-search">
-    <label for="sale-date">Filter by date</label>
-    <input type="date" id="sale-date" name="date" value="<?= esc($filter_dt ?? '') ?>">
-    <button type="submit" class="btn-primary">Apply</button>
-    <?php if (($filter_dt ?? '') !== ''): ?>
-        <a href="<?= base_url('admin/sales') ?>" class="btn-link-muted">Clear</a>
-    <?php endif; ?>
+    <div style="display:flex; align-items:center; gap:16px;">
+        <div>
+            <label for="sale-date">Filter by date</label>
+            <input type="date" id="sale-date" name="date" value="<?= esc($filter_dt ?? '') ?>">
+        </div>
+        <div style="display:flex; align-items:center; gap:6px;">
+            <input type="checkbox" id="voided-check" name="voided" value="1" <?= ($is_voided ?? false) ? 'checked' : '' ?> onchange="this.form.submit()">
+            <label for="voided-check" style="margin:0; cursor:pointer;">Show Voided Sales</label>
+        </div>
+        <button type="submit" class="btn-primary">Apply</button>
+        <?php if (($filter_dt ?? '') !== '' || ($is_voided ?? false)): ?>
+            <a href="<?= base_url('admin/sales') ?>" class="btn-link-muted">Clear</a>
+        <?php endif; ?>
+    </div>
 </form>
 
 <div class="card">
-    <h3>Transactions</h3>
+    <h3><?= ($is_voided ?? false) ? 'Voided Transactions' : 'Transactions' ?></h3>
     <table>
         <thead>
             <tr>
@@ -49,7 +57,7 @@
                 <th>Unit</th>
                 <th>Total Paid</th>
                 <th>When</th>
-                <th style="text-align: right;">&nbsp;</th>
+                <th style="text-align: right;"><?= ($is_voided ?? false) ? 'Action' : '&nbsp;' ?></th>
             </tr>
         </thead>
         <tbody>
@@ -61,27 +69,36 @@
                     <td style="font-weight: 600;">₱<?= number_format((float) ($s['total_price'] ?? 0), 2) ?></td>
                     <td style="color: var(--text-muted); font-size: 13px;"><?= esc($s['created_at'] ?? '') ?></td>
                     <td style="text-align: right;">
-                        <a
-                            href="<?= base_url('admin/sales/delete/' . ($s['id'] ?? '')) ?>"
-                            class="btn-action btn-delete"
-                            data-confirm-delete
-                            data-confirm-message="Remove this sale record?"
-                            title="Remove"
-                            aria-label="Remove sale record"
-                        >
-                            <i class="fas fa-times"></i>
-                        </a>
+                        <?php if ($is_voided ?? false): ?>
+                            <a href="<?= base_url('admin/sales/restore/' . ($s['id'] ?? '')) ?>" 
+                               class="btn-action btn-edit" 
+                               title="Restore Sale">
+                                <i class="fas fa-undo"></i> Restore
+                            </a>
+                        <?php else: ?>
+                            <a
+                                href="<?= base_url('admin/sales/delete/' . ($s['id'] ?? '')) ?>"
+                                class="btn-action btn-delete"
+                                data-confirm-delete
+                                data-confirm-message="Void this sale record? (Stock will be returned)"
+                                title="Void Sale"
+                                aria-label="Void sale record"
+                            >
+                                <i class="fas fa-times"></i> Void
+                            </a>
+                        <?php endif; ?>
                     </td>
                 </tr>
             <?php endforeach; ?>
+            <?php if (empty($sales)): ?>
+                <tr>
+                    <td colspan="6" style="text-align:center; padding: 20px; color: var(--text-muted);">
+                        No <?= ($is_voided ?? false) ? 'voided' : '' ?> transactions found.
+                    </td>
+                </tr>
+            <?php endif; ?>
         </tbody>
     </table>
 </div>
-
-<?php if (isset($pager) && $pager): ?>
-    <div class="pager-wrap">
-        <?= $pager->only(['date' => $filter_dt ?? ''])->links('default', 'default_full') ?>
-    </div>
-<?php endif; ?>
 
 <?= $this->endSection() ?>

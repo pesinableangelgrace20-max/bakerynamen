@@ -16,6 +16,9 @@
             <label>Current Stock</label>
             <input type="number" name="stock" value="<?= esc(old('stock', $product['stock'] ?? '')) ?>" required>
 
+            <label>Expiry Date</label>
+            <input type="date" name="expiry_date" value="<?= esc(old('expiry_date', $product['expiry_date'] ?? '')) ?>">
+
             <button type="submit" class="btn-primary"><i class="fas fa-check"></i> Update Product</button>
             <a href="<?= base_url('admin/products') ?>" class="btn-link-muted">Cancel and go back</a>
         </div>

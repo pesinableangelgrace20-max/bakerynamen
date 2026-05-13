@@ -9,6 +9,10 @@
         <input type="text" name="name" placeholder="Product Name" required style="flex:2;" value="<?= esc(old('name') ?? '') ?>">
         <input type="number" step="0.01" name="price" placeholder="Price (₱)" required style="flex:1;" value="<?= esc(old('price') ?? '') ?>">
         <input type="number" name="stock" placeholder="Initial Stock" required style="flex:1;" value="<?= esc(old('stock') ?? '') ?>">
+        <div style="flex:1; display:flex; flex-direction:column;">
+            <label style="font-size: 11px; color: var(--text-muted); margin-bottom: 2px;">Expiry Date</label>
+            <input type="date" name="expiry_date" value="<?= esc(old('expiry_date') ?? '') ?>">
+        </div>
         <button type="submit" class="btn-primary">Add Product</button>
     </form>
 </div>
@@ -27,6 +31,7 @@
             <th>Bread Name</th>
             <th>Price</th>
             <th>Stock</th>
+            <th>Expiry Date</th>
             <th style="text-align: right;">Actions</th>
         </tr>
     </thead>
@@ -37,6 +42,9 @@
                 <td>₱<?= number_format((float) ($p['price'] ?? 0), 2) ?></td>
                 <td>
                     <span class="stock-pill"><?= esc($p['stock'] ?? 0) ?> units</span>
+                </td>
+                <td style="font-size: 14px; color: var(--text-muted);">
+                    <?= $p['expiry_date'] ? esc($p['expiry_date']) : '<span style="font-style:italic;">N/A</span>' ?>
                 </td>
                 <td style="text-align: right;">
                     <a href="<?= base_url('admin/product/edit/' . ($p['id'] ?? '')) ?>" class="btn-action btn-edit">
@@ -53,11 +61,5 @@
         <?php endforeach; ?>
     </tbody>
 </table>
-
-<?php if (isset($pager) && $pager): ?>
-    <div class="pager-wrap">
-        <?= $pager->only(['q' => $search_q ?? ''])->links('default', 'default_full') ?>
-    </div>
-<?php endif; ?>
 
 <?= $this->endSection() ?>

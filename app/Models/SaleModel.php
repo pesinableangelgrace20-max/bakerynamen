@@ -11,9 +11,11 @@ class SaleModel extends Model
     protected $useAutoIncrement = true;
     protected $returnType       = 'array';
     protected $useTimestamps    = true;
+    protected $useSoftDeletes   = true;
     protected $dateFormat       = 'datetime';
     protected $createdField     = 'created_at';
     protected $updatedField     = '';
+    protected $deletedField     = 'deleted_at';
 
     protected $allowedFields = [
         'product_id',
@@ -22,5 +24,6 @@ class SaleModel extends Model
         'unit_price',
         'total_price',
         'cashier_id',
+        'deleted_at',
     ];
 }

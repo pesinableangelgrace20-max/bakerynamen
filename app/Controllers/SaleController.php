@@ -23,21 +23,69 @@ class SaleController extends AdminBaseController
         }
 
         $date   = $this->request->getGet('date');
-        $sModel = new SaleModel();
+        $voided = $this->request->getGet('voided') === '1';
 
         if ($date !== null && $date !== '') {
-            $sModel->where('created_at >=', $date . ' 00:00:00')
+            $this->sModel->where('created_at >=', $date . ' 00:00:00')
                 ->where('created_at <=', $date . ' 23:59:59');
         }
 
+        if ($voided) {
+            $this->sModel->onlyDeleted();
+        }
+
+        $today = date('Y-m-d');
+        $activeProducts = $this->pModel->where('expiry_date >=', $today)
+                                      ->orWhere('expiry_date', null)
+                                      ->orderBy('name', 'ASC')
+                                      ->findAll();
+
         return view('admin/pages/sales', [
             'page'      => 'sales',
-            'title'     => 'Sales',
-            'products'  => $this->pModel->findAll(),
-            'sales'     => $sModel->orderBy('id', 'DESC')->paginate(20),
-            'pager'     => $sModel->pager,
+            'title'     => $voided ? 'Voided Sales' : 'Sales',
+            'products'  => $activeProducts,
+            'sales'     => $this->sModel->orderBy('id', 'DESC')->findAll(),
             'filter_dt' => $date ?? '',
+            'is_voided' => $voided,
         ]);
+    }
+
+    public function restore($id)
+    {
+        if ($redirect = $this->requireLogin()) {
+            return $redirect;
+        }
+
+        $sale = $this->sModel->onlyDeleted()->find($id);
+        if (! $sale) {
+            return redirect()->to('/admin/sales?voided=1')->with('error', 'Sale record not found.');
+        }
+
+        $productId = (int) ($sale['product_id'] ?? 0);
+        $quantity  = (int) ($sale['quantity'] ?? 0);
+
+        $db = db_connect();
+        $db->transStart();
+
+        // When restoring a sale, we deduct the stock again.
+        // We removed the strict 'stock >=' check to allow restoration 
+        // even if it results in temporary negative stock, so you can fix records.
+        if ($productId > 0 && $quantity > 0) {
+            $db->table('products')
+                ->where('id', $productId)
+                ->set('stock', 'stock - ' . $quantity, false)
+                ->update();
+        }
+
+        // Restore the record by setting deleted_at back to null using Query Builder
+        // to ensure we bypass model-level data validation that might cause exceptions.
+        $db->table('sales')->where('id', $id)->update(['deleted_at' => null]);
+
+        if ($db->transComplete() === false) {
+            return redirect()->to('/admin/sales?voided=1')->with('error', 'Could not restore sale.');
+        }
+
+        return redirect()->to('/admin/sales')->with('success', 'Sale restored successfully.');
     }
 
     public function store()
@@ -93,6 +141,7 @@ class SaleController extends AdminBaseController
         $saleId = (int) $this->sModel->getInsertID();
 
         if ($db->transComplete() === false || ! $saleId) {
+            log_message('error', 'Sale failed. Transaction status: ' . ($db->transStatus() ? 'true' : 'false') . '. Sale ID: ' . $saleId);
             return redirect()->to('/admin/sales')->with('error', 'Sale could not be completed. Please try again.');
         }
 
@@ -105,7 +154,7 @@ class SaleController extends AdminBaseController
             return $redirect;
         }
 
-        $sale = $this->sModel->find($id);
+        $sale = $this->sModel->withDeleted()->find($id);
         if (! $sale) {
             return redirect()->to('/admin/sales')->with('error', 'Receipt not found.');
         }
